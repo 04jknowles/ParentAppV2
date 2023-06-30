@@ -25,10 +25,10 @@ const listData = [
   {
     title: 'Lisa Simpson',
     subtitle: 'AM - Northbound Route',
-    // status: 'ON 8:15 AM',
-    // statusType: 'ON',
-    status: 'OFF 8:48 AM',
-    statusType: 'OFF',
+    status: 'ON 8:15 AM',
+    statusType: 'ON',
+    // status: 'OFF 8:48 AM',
+    // statusType: 'OFF',
     // status: 'Not Boarded',
     // statusType: 'NotBoarded',
     details: 'These are the details for item 1',
@@ -41,7 +41,8 @@ const listData = [
     subtitle: 'AM - Eastbound Route',
     status: 'OFF 8:45 AM',
     statusType: 'OFF',
-
+    // status: 'Not Boarded',
+    // statusType: 'NotBoarded',
     details: 'These are the details for item 1',
     color: 'green',
     latitude: -34.981,
@@ -67,13 +68,13 @@ const styles = StyleSheet.create({
   },
   listItemContent: {
     flex: 1,
-    padding: 16,
     backgroundColor: 'white', // Default color
   },
   listItemTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 16,
   },
   listItemTitle: {
     fontSize: 18,
@@ -96,9 +97,82 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
   },
+  headerView: {
+    width: '100%',
+    alignItems: 'center', // This centers the text horizontally.
+    paddingVertical: 10,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center', // This centers the text horizontally within the Text component itself, not necessary if the headerView's alignItems is set to 'center'
+  },
+  contentContainer: {
+    backgroundColor: '#F5F6F7',
+  },
+  scanHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'left',
+    color: 'grey',
+    padding: 5,
+  },
+  scanRow: {
+    padding: 5,
+    borderBottomColor: '#ddd',
+    borderBottomWidth: 1,
+  },
+  scanRowTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 5,
+  },
+  scanTypeOn: {
+    color: 'green',
+    fontWeight: 'bold',
+  },
+  scanTypeOff: {
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  scanTime: {
+    color: 'grey',
+  },
+  scanLocation: {
+    paddingBottom: 5,
+    color: 'black',
+  },
+  scanStop: {
+    paddingBottom: 5,
+    color: 'black',
+  },
+  exceptionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  scanException: {
+    fontSize: 14,
+    color: 'blue',
+  },
+  noScanRow: {
+    padding: 10,
+    borderBottomColor: '#ddd',
+    borderBottomWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noScanContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  noScanIcon: {
+    marginRight: 10,
+  },
+  noScanText: {
+    fontSize: 14,
+    color: 'grey',
   },
 });
 
@@ -108,7 +182,7 @@ const MapScreen = () => {
   const mapViewRef = useRef(null); // Initialize the mapViewRef
 
   // variables
-  const snapPoints = useMemo(() => ['30%', '50%'], []);
+  const snapPoints = useMemo(() => ['15%', '30%', '60%'], []);
 
   // callbacks
   const handleSheetChanges = useCallback(index => {
@@ -134,7 +208,7 @@ const MapScreen = () => {
 
     useEffect(() => {
       Animated.timing(heightAnim, {
-        toValue: isExpanded ? 100 : 0,
+        toValue: isExpanded ? 180 : 0,
         duration: 200,
         useNativeDriver: false,
       }).start();
@@ -157,8 +231,53 @@ const MapScreen = () => {
               <Text style={styles.listItemStatus}>{item.status}</Text>
             </View>
           </View>
-          <Animated.View style={{height: heightAnim, overflow: 'hidden'}}>
-            <Text style={styles.listItemDetails}>{item.details}</Text>
+          <Animated.View
+            style={{
+              height: heightAnim,
+              overflow: 'hidden',
+              backgroundColor: 'white',
+            }}>
+            <Text style={styles.scanHeader}>Student Scans</Text>
+            {item.statusType === 'ON' || item.statusType === 'OFF' ? (
+              <View style={styles.scanRow}>
+                <View style={styles.scanRowTop}>
+                  <Text style={styles.scanTypeOn}>
+                    SCAN ON - 123 Elm Street - O'halloran
+                  </Text>
+                  <Text style={styles.scanTime}>7:30 AM</Text>
+                </View>
+
+                <Text style={styles.scanStop}>Stop: 26 PIMPALA ROAD</Text>
+                <View style={styles.exceptionContainer}>
+                  <Text style={styles.scanException}>
+                    Exceptions: Wrong Stop, No Card
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.noScanRow}>
+                <View style={styles.noScanContent}>
+                  <Text style={styles.noScanText}>
+                    No scan data available. Student has not been scanned yet.
+                  </Text>
+                </View>
+              </View>
+            )}
+            {item.statusType === 'OFF' ? (
+              <View style={styles.scanRow}>
+                <View style={styles.scanRowTop}>
+                  <Text style={styles.scanTypeOff}>
+                    SCAN OFF - 5 - Majors Rd - O'Halloran Hill
+                  </Text>
+                  <Text style={styles.scanTime}>8:45 AM</Text>
+                </View>
+
+                <Text style={styles.scanStop}>Stop: IQRA COLLEGE CAMPUS</Text>
+                <View style={styles.exceptionContainer}>
+                  <Text style={styles.scanException}>Exceptions: None</Text>
+                </View>
+              </View>
+            ) : null}
           </Animated.View>
         </View>
       </TouchableOpacity>
@@ -187,7 +306,11 @@ const MapScreen = () => {
             <Text style={styles.headerTitle}>{selectedRoute}</Text>
             <View style={{width: 60}}></View>
           </View>
-        ) : null}
+        ) : (
+          <View style={styles.headerView}>
+            <Text style={styles.headerTitle}>Live Student Tracking</Text>
+          </View>
+        )}
         {data.map((item, index) => (
           <ExpandableListItem
             key={index}
@@ -230,7 +353,9 @@ const MapScreen = () => {
         key={selectedRoute}
         index={1}
         snapPoints={snapPoints}
-        onChange={handleSheetChanges}>
+        onChange={handleSheetChanges}
+        backgroundStyle={{backgroundColor: 'transparent'}}
+        style={styles.contentContainer}>
         <View style={styles.contentContainer}>
           <BottomSheetContent data={filteredData} />
         </View>
